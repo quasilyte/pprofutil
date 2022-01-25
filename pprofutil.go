@@ -4,6 +4,7 @@ import (
 	"strings"
 )
 
+// Symbol represents a parsed profile.proto function name.
 type Symbol struct {
 	PkgPath  string
 	PkgName  string
@@ -11,6 +12,7 @@ type Symbol struct {
 	FuncName string
 }
 
+// ParseFuncName parses a profile.proto Function.Name.
 func ParseFuncName(s string) Symbol {
 	return parseFuncName(s)
 }
