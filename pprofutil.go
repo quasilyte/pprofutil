@@ -60,6 +60,7 @@ func parseFuncName(s string) Symbol {
 	// 2. `x` is a func name, `func1` means "first anonymous function inside x"
 	// Since `func%d` is not a common method name, we try to resolve this ambiguity
 	// in favor of (2).
+	// See https://groups.google.com/g/golang-nuts/c/sAY9RDSfZX8
 	rest = trimLambdaSuffix(rest)
 	if dotPos := strings.IndexByte(rest, '.'); dotPos != -1 {
 		sym.TypeName = rest[:dotPos]
@@ -69,39 +70,6 @@ func parseFuncName(s string) Symbol {
 
 	sym.FuncName = rest
 	return sym
-
-	/*
-		resultPkgName := s[:i]
-		rest := s[i+1:]
-
-		// A simple case: we have () that surround the receiver.
-		if strings.HasPrefix(rest, "(") {
-			offset := 1
-			if strings.HasPrefix(rest, "(*") {
-				offset++
-			}
-			rparen := strings.IndexByte(rest, ')')
-			if rparen == -1 {
-				return "", "", ""
-			}
-			resultTypeName := rest[offset:rparen]
-			resultFuncName := rest[rparen+len(")."):]
-			return resultPkgName, resultTypeName, trimLambdaSuffix(resultFuncName)
-		}
-
-		// Possible ambiguity: if symbol looks like `x.func1`, there are at least two
-		// possible interpretations:
-		// 1. `x` is a type name, `func1` is a method name
-		// 2. `x` is a func name, `func1` means "first anonymous function inside x"
-		// Since `func%d` is not a common method name, we try to resolve this ambiguity
-		// in favor of (2).
-		rest = trimLambdaSuffix(rest)
-		if dotPos := strings.IndexByte(rest, '.'); dotPos != -1 {
-			return resultPkgName, rest[:dotPos], rest[dotPos+1:]
-		}
-
-		return resultPkgName, "", rest
-	*/
 }
 
 func trimLambdaSuffix(s string) string {
