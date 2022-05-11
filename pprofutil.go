@@ -2,7 +2,46 @@ package pprofutil
 
 import (
 	"strings"
+
+	"github.com/google/pprof/profile"
 )
+
+// WalkSamples is a convenience function for looping over time samples.
+// For instance, it can be used to loop over time/ns data.
+//
+// It calls a given function for every non-empty location
+// with all "lines" combined into a stack.
+func WalkSamples(p *profile.Profile, visit func(s Sample)) {
+	var stack []profile.Line
+	for _, s := range p.Sample {
+		if len(s.Location) == 0 || len(s.Location[0].Line) == 0 {
+			continue
+		}
+		stack = stack[:0] // reuse memory for every stack
+		for _, loc := range s.Location {
+			stack = append(stack, loc.Line...)
+		}
+		visit(Sample{
+			Value: s.Value[1],
+			Stack: stack,
+		})
+	}
+}
+
+// Sample holds data of the current sample in a convenient way.
+//
+// See WalkSamples.
+type Sample struct {
+	Value int64
+
+	// Stack contains line entries for this sample.
+	// Stack[0] is a current function.
+	// Stack[1:] is a slice of the callers.
+	//
+	// The stack is never empty if this Sample object is provided
+	// by the WalkSamples function.
+	Stack []profile.Line
+}
 
 // Symbol represents a parsed profile.proto function name.
 type Symbol struct {
